@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Medallas Olímpicas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Registro de Medallas Olímpicas</h1>
+        
+        <form id="medal-form">
+            <div class="mb-3">
+                <label for="country" class="form-label">País</label>
+                <input type="text" class="form-control" id="country" required>
+            </div>
+            <div class="mb-3">
+                <label for="gold" class="form-label">Oro</label>
+                <input type="number" class="form-control" id="gold" min="0" required>
+            </div>
+            <div class="mb-3">
+                <label for="silver" class="form-label">Plata</label>
+                <input type="number" class="form-control" id="silver" min="0" required>
+            </div>
+            <div class="mb-3">
+                <label for="bronze" class="form-label">Bronce</label>
+                <input type="number" class="form-control" id="bronze" min="0" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Medallas</button>
+        </form>
+
+        <h2 class="mt-5">Medallas Registradas</h2>
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th>País</th>
+                    <th>Oro</th>
+                    <th>Plata</th>
+                    <th>Bronce</th>
+                </tr>
+            </thead>
+            <tbody id="medal-table-body">
+                <!-- Las medallas registradas se mostrarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('medal-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const country = document.getElementById('country').value;
+            const gold = document.getElementById('gold').value;
+            const silver = document.getElementById('silver').value;
+            const bronze = document.getElementById('bronze').value;
+
+            fetch('http://localhost:3000/add-medal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ country, gold, silver, bronze })
+            })
+            .then(response => response.json())
+            .then(() => {
+                document.getElementById('medal-form').reset();
+                loadMedals();
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function loadMedals() {
+            fetch('http://localhost:3000/medals')
+                .then(response => response.json())
+                .then(medals => {
+                    const tableBody = document.getElementById('medal-table-body');
+                    tableBody.innerHTML = '';
+                    medals.forEach(medal => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${medal.country}</td>
+                            <td>${medal.gold}</td>
+                            <td>${medal.silver}</td>
+                            <td>${medal.bronze}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Cargar las medallas al cargar la página
+        loadMedals();
+    </script>
+</body>
+</html>
+
